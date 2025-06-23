@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.14.36202.13 d17.14
+VisualStudioVersion = 17.14.36202.13
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BzUI", "BzUI\BzUI\BzUI.csproj", "{5A988BC1-ED6F-4822-9F12-4AF8EA0580E7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orchestrator", "Orchestrator\Orchestrator.csproj", "{02C3971A-D807-4D4A-BBDE-DA0602A9C383}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{5A988BC1-ED6F-4822-9F12-4AF8EA0580E7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5A988BC1-ED6F-4822-9F12-4AF8EA0580E7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5A988BC1-ED6F-4822-9F12-4AF8EA0580E7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{02C3971A-D807-4D4A-BBDE-DA0602A9C383}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{02C3971A-D807-4D4A-BBDE-DA0602A9C383}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{02C3971A-D807-4D4A-BBDE-DA0602A9C383}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{02C3971A-D807-4D4A-BBDE-DA0602A9C383}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
