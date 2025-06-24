@@ -12,15 +12,18 @@ builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
+app.UseOutputCache();
+
 app.MapDefaultEndpoints();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.MapOpenApi().CacheOutput();
 }
 
 app.UseHttpsRedirection();
+
 
 app.MapGet("/counter/{grainId}", async (IClusterClient client, string grainId) =>
 {
