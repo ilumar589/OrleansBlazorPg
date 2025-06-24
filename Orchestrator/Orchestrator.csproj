@@ -18,6 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\BzUI\BzUI\BzUI.csproj" />
     <ProjectReference Include="..\OrleansClient\OrleansClient.csproj" />
     <ProjectReference Include="..\OrleansServer\OrleansServer.csproj" />
   </ItemGroup>

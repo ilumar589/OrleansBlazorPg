@@ -1,4 +1,3 @@
-using Projects;
 using System.Diagnostics;
 
 var builder = DistributedApplication.CreateBuilder(args);
@@ -66,5 +65,7 @@ apiService
             ResourceCommandState.Enabled : ResourceCommandState.Disabled,
         iconName: "Document",
         iconVariant: IconVariant.Filled);
+
+builder.AddProject<Projects.BzUI>("UI");
 
 builder.Build().Run();
