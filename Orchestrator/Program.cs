@@ -15,4 +15,6 @@ var orleans = builder.AddOrleans("default")
 
 builder.AddProject<Projects.OrleansServer>("orleansserver");
 
+builder.AddProject<Projects.OrleansClient>("orleansclient");
+
 builder.Build().Run();
