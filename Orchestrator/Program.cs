@@ -1,5 +1,4 @@
 using Orchestrator;
-using System.Diagnostics;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
