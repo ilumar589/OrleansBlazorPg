@@ -6,20 +6,28 @@ builder.AddServiceDefaults();
 builder.AddKeyedAzureTableClient("clustering");
 builder.UseOrleansClient();
 
+builder.Services.AddProblemDetails();
+
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
-app.UseOutputCache();
+//app.UseOutputCache(); // TODO make it work
 
 app.MapDefaultEndpoints();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi().CacheOutput();
+    app.MapOpenApi();
+        //.CacheOutput(); TODO make it work
+
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/openapi/v1.json", "Orleans Client API V1");
+    });
 }
 
 app.UseHttpsRedirection();
