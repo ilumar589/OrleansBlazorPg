@@ -1,6 +1,10 @@
+using OrleansContracts;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
+builder.AddKeyedAzureTableClient("clustering");
+builder.UseOrleansClient();
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
@@ -18,28 +22,19 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-var summaries = new[]
+app.MapGet("/counter/{grainId}", async (IClusterClient client, string grainId) =>
 {
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+    var grain = client.GetGrain<ICounterGrain>(grainId);
+    return await grain.Get();
+});
 
-app.MapGet("/weatherforecast", () =>
+app.MapPost("/counter/{grainId}", async (IClusterClient client, string grainId) =>
 {
-    var forecast = Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
+    var grain = client.GetGrain<ICounterGrain>(grainId);
+    return await grain.Increment();
+});
 
-app.Run();
+app.UseFileServer();
 
-internal record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
+await app.RunAsync();
+

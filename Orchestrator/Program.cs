@@ -13,8 +13,13 @@ var orleans = builder.AddOrleans("default")
                      .WithClustering(clusteringTable)
                      .WithGrainStorage("Default", grainStorage);
 
-builder.AddProject<Projects.OrleansServer>("orleansserver");
+builder.AddProject<Projects.OrleansServer>("orleansserver")
+    .WithReference(orleans)
+    .WithReplicas(3);
 
-builder.AddProject<Projects.OrleansClient>("orleansclient");
+builder.AddProject<Projects.OrleansClient>("orleansclient")
+    .WithReference(orleans.AsClient())
+    .WithExternalHttpEndpoints()
+    .WithReplicas(3);
 
 builder.Build().Run();
