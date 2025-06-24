@@ -1,3 +1,4 @@
+using Orchestrator;
 using System.Diagnostics;
 
 var builder = DistributedApplication.CreateBuilder(args);
@@ -19,10 +20,6 @@ builder.AddProject<Projects.OrleansServer>("orleansserver")
     .WithReference(orleans)
     .WithReplicas(3);
 
-// config variables for client commands
-var swaggerCommand = "swagger-ui-docs";
-var swaggerCommandDescription = "Swagger UI for the Orleans server";
-var openApiUiPath = "swagger";
 
 var apiService = builder.AddProject<Projects.OrleansClient>("orleansclient");
 
@@ -30,41 +27,7 @@ apiService
     .WithReference(orleans.AsClient())
     .WithExternalHttpEndpoints()
     .WithReplicas(3)
-    .WithCommand(
-        swaggerCommand,
-        swaggerCommandDescription,
-        executeCommand: async _ =>
-        {
-            try
-            {
-                // Base URL
-                var endpoint = apiService.GetEndpoint("https");
-
-                var url = $"{endpoint.Url}/{openApiUiPath}";
-
-                Process.Start(new ProcessStartInfo(url)
-                {
-                    UseShellExecute = true,
-                });
-
-                return new ExecuteCommandResult
-                {
-                    Success = true,
-                };
-            }
-            catch (Exception ex)
-            {
-                return new ExecuteCommandResult
-                {
-                    Success = false,
-                    ErrorMessage = ex.Message,
-                };
-            }
-        },
-        updateState: context => context.ResourceSnapshot.HealthStatus == Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus.Healthy ?
-            ResourceCommandState.Enabled : ResourceCommandState.Disabled,
-        iconName: "Document",
-        iconVariant: IconVariant.Filled);
+    .WithSwaggerUI();
 
 builder.AddProject<Projects.BzUI>("UI");
 
