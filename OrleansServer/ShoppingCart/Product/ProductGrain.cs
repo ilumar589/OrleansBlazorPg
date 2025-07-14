@@ -6,38 +6,52 @@ public sealed class ProductGrain(
     [PersistentState(
         stateName: "Product",
         storageName: "shopping-cart")]
-    IPersistentState<ProductDetails> product) : Grain, IProductGrain
+    IPersistentState<ProductDetails> productState) : Grain, IProductGrain
 {
 
-    private readonly IPersistentState<ProductDetails> _product = product;
+    private readonly IPersistentState<ProductDetails> _productState = productState;
 
-    public ValueTask CreateOrUpdateProductAsync(ProductDetails productDetails)
+    public ValueTask CreateOrUpdateProductAsync(ProductDetails productDetails) => UpdateStateAsync(productDetails);
+
+    public ValueTask<int> GetProductAvailibilityAsync() => ValueTask.FromResult(_productState.State.Quantity);
+
+    public ValueTask<ProductDetails> GetProductDetailsAsync() => ValueTask.FromResult(_productState.State);
+
+    public ValueTask ReturnProductAsync(int quantity) => UpdateStateAsync(_productState.State with
     {
-        throw new NotImplementedException();
-    }
+        Quantity = _productState.State.Quantity + quantity
+    });
 
-    public ValueTask<int> GetProductAvailibilityAsync() => ValueTask.FromResult(_product.State.Quantity);
-
-    public ValueTask<ProductDetails> GetProductDetailsAsync() => ValueTask.FromResult(_product.State);
-
-    public ValueTask ReturnProductAsync(int quantity)
+    public async ValueTask<(bool IsAvailable, ProductDetails? ProductDetails)> TryTakeProductAsync(int quantity)
     {
-        throw new NotImplementedException();
-    }
+        if (_productState.State.Quantity < quantity) return (false, null);
 
-    public ValueTask<(bool IsAvailable, ProductDetails ProductDetails)> TryTakeProductAsync(int quantity)
-    {
-        throw new NotImplementedException();
+        var updatedState = _productState.State with
+        {
+            Quantity = _productState.State.Quantity - quantity
+        };
+
+        await UpdateStateAsync(updatedState);
+
+        return (true, _productState.State);
     }
 
 
     private async ValueTask UpdateStateAsync(ProductDetails product)
     {
-        var oldCategory = _product.State.Category;
+        var oldCategory = _productState.State.Category;
 
-        _product.State = product;
-        await _product.WriteStateAsync();
+        _productState.State = product;
+        await _productState.WriteStateAsync();
 
-        
+        var inventoryGrain = GrainFactory.GetGrain<IInventoryGrain>(_productState.State.Category.ToString());
+        await inventoryGrain.AddOrUpdateProductAsync(product);
+
+        if (oldCategory != _productState.State.Category)
+        {
+            // if category changed, remove the product from the old category grain
+            var oldCategoryGrain = GrainFactory.GetGrain<IInventoryGrain>(oldCategory.ToString());
+            await oldCategoryGrain.RemoveProductAsync(product.Id);
+        }
     }
 }

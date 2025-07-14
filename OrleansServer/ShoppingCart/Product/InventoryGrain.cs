@@ -1,37 +1,42 @@
-﻿using OrleansContracts.ShoppingCart.Product;
+﻿using Orleans.Concurrency;
+using OrleansContracts.ShoppingCart.Product;
 
 namespace OrleansServer.ShoppingCart.Product;
 
+[Reentrant]
 public sealed class InventoryGrain(
     [PersistentState(
         stateName: "Inventory",
         storageName: "shopping-cart")]
-    IPersistentState<HashSet<string>> state) : Grain, IInventoryGrain
+    IPersistentState<HashSet<string>> productIdsState) : Grain, IInventoryGrain
 {
     private readonly Dictionary<string, ProductDetails> _productCache = [];
 
     public override Task OnActivateAsync(CancellationToken _) => PopulateProductCacheAsync().AsTask();
 
-    public ValueTask AddOrUpdateProductAsync(ProductDetails productDetails)
+    public async ValueTask AddOrUpdateProductAsync(ProductDetails product)
     {
-        throw new NotImplementedException();
+        productIdsState.State.Add(product.Id);
+        _productCache[product.Id] = product;
+
+        await productIdsState.WriteStateAsync();
     }
 
-    public ValueTask<HashSet<ProductDetails>> GetAllProductsAsync()
-    {
-        throw new NotImplementedException();
-    }
+    public ValueTask<HashSet<ProductDetails>> GetAllProductsAsync() => ValueTask.FromResult(_productCache.Values.ToHashSet());
 
-    public ValueTask RemoveProductAsync(string productId)
+    public async ValueTask RemoveProductAsync(string productId)
     {
-        throw new NotImplementedException();
+        productIdsState.State.Remove(productId);
+        _productCache.Remove(productId);
+
+        await productIdsState.WriteStateAsync();
     }
 
     private async ValueTask PopulateProductCacheAsync()
     {
-        if (state is not { State.Count: > 0 }) return;
+        if (productIdsState is not { State.Count: > 0 }) return;
 
-        await Parallel.ForEachAsync(state.State, async (productId, _) =>
+        await Parallel.ForEachAsync(productIdsState.State, async (productId, _) =>
         {
             var productGrain = GrainFactory.GetGrain<IProductGrain>(productId);
             _productCache[productId] = await productGrain.GetProductDetailsAsync();
