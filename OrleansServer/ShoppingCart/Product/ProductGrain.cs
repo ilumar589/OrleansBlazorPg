@@ -6,7 +6,7 @@ public sealed class ProductGrain(
     [PersistentState(
         stateName: "Product",
         storageName: "shopping-cart")]
-    IPersistentState<ProductDetails> product) : IProductGrain
+    IPersistentState<ProductDetails> product) : Grain, IProductGrain
 {
 
     private readonly IPersistentState<ProductDetails> _product = product;
@@ -28,5 +28,16 @@ public sealed class ProductGrain(
     public ValueTask<(bool IsAvailable, ProductDetails ProductDetails)> TryTakeProductAsync(int quantity)
     {
         throw new NotImplementedException();
+    }
+
+
+    private async ValueTask UpdateStateAsync(ProductDetails product)
+    {
+        var oldCategory = _product.State.Category;
+
+        _product.State = product;
+        await _product.WriteStateAsync();
+
+        
     }
 }
